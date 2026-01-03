@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Assembleia de Deus Missionária Canaã</string>
+    <string name="title_activity_main">Assembleia de Deus Missionária Canaã</string>
+    <string name="package_name">com.missionaria.canaa</string>
+    <string name="custom_url_scheme">com.missionaria.canaa</string>
+</resources>

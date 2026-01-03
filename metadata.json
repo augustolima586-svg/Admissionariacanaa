@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Assembleia de Deus Missionária Canãa",
+  "description": "Sistema de Gestão, Secretaria, Tesouraria, Células e App do Membro.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}

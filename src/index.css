@@ -1,0 +1,128 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utility classes */
+.btn {
+    @apply min-h-touch rounded-lg py-2 px-4 font-bold transition-all duration-200 active:scale-95 flex items-center justify-center;
+}
+
+/* High-Fidelity Design System */
+body {
+    @apply bg-slate-50 font-sans text-slate-900 antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    @apply font-heading tracking-tight;
+}
+
+.card {
+    @apply rounded-2xl shadow-lg shadow-slate-200/50 bg-white p-6 border border-slate-100;
+}
+
+/* Premium Input Styles */
+.input {
+    @apply w-full h-[48px] rounded-lg border border-slate-200 px-4 text-base transition-all bg-white font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-amber-600 focus:ring-4 focus:ring-amber-500/10;
+}
+
+input[type="date"].input {
+    @apply font-sans font-semibold text-slate-700 tracking-tight;
+}
+
+/* For better cross-browser date input appearance */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-40 hover:opacity-100 transition-opacity p-1;
+}
+
+.input-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/10;
+}
+
+.input-success {
+    @apply border-green-500 focus:border-green-500 focus:ring-green-500/10;
+}
+
+/* Form Group & Labels */
+.form-group {
+    @apply w-full mb-5 relative;
+}
+
+.form-group label {
+    @apply block mb-2 text-xs font-semibold text-slate-500 uppercase tracking-widest leading-none;
+}
+
+/* Section Styling */
+.section-title {
+    @apply font-bold text-slate-800 text-sm uppercase tracking-wider mb-6 pb-2 border-b border-slate-100 flex items-center gap-2;
+}
+
+.section-divider {
+    @apply hidden;
+    /* Sections are now self-contained */
+}
+
+/* Buttons */
+.btn-primary {
+    @apply bg-indigo-900 text-white w-full h-[50px] rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-800 hover:shadow-indigo-300 transition-all active:scale-[0.98] flex items-center justify-center gap-2;
+}
+
+.fixed-bottom-btn {
+    @apply fixed inset-x-0 bottom-0 z-50 p-4 bg-white/90 backdrop-blur-lg border-t border-slate-100 md:relative md:bg-transparent md:border-none md:p-0;
+}
+
+/* Segmented Control (Tabs) */
+.segmented-control {
+    @apply flex bg-slate-100 p-1 rounded-xl mb-8 relative;
+}
+
+.segmented-btn {
+    @apply flex-1 py-2.5 text-xs font-bold text-slate-500 rounded-lg transition-all text-center uppercase tracking-wide cursor-pointer select-none;
+}
+
+.segmented-btn.active {
+    @apply bg-white text-indigo-900 shadow-sm ring-1 ring-black/5;
+}
+
+
+/* Animations */
+@keyframes scaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-scaleUp {
+    animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-pulse-slow {
+    animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
