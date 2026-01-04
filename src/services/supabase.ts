@@ -1,10 +1,16 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// As chaves devem ser as do seu projeto no Supabase
-// Substitua 'URL' e 'KEY' se necessário para as do seu painel real
-const SUPABASE_URL = 'https://urnqahdumbnzhonnitsb.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_pGeNErZnmYMckM7aUTxuRw_5_Auyb8a';
+// Supabase configuration from environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Validate that environment variables are set
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Missing Supabase environment variables. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.'
+  );
+}
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
