@@ -22,12 +22,12 @@ interface MobileNavProps {
 const MobileNav: React.FC<MobileNavProps> = ({ currentView, onViewChange, userRole, customPermissions }) => {
     const menuConfig = [
         { id: ViewType.DASHBOARD, label: 'Início', icon: LayoutDashboard, roles: ['Admin'] },
-        { id: ViewType.HISTORIA, label: 'História', icon: History, roles: ['Admin', 'Secretaria', 'Membro'] },
+        { id: ViewType.HISTORIA, label: 'Nossa História', icon: History, roles: ['Admin', 'Secretaria', 'Membro'] },
         { id: ViewType.SECRETARIA, label: 'Sec.', icon: Users, roles: ['Admin', 'Secretaria'] },
         { id: ViewType.RECEPCAO, label: 'Rec.', icon: UserCircle, roles: ['Admin', 'Secretaria'] },
-        { id: ViewType.EBD, label: 'EBD', icon: GraduationCap, roles: ['Admin', 'Secretaria', 'Membro'] },
+        { id: ViewType.EBD, label: 'Escola Bíblica - EBD', icon: GraduationCap, roles: ['Admin', 'Secretaria', 'Membro'] },
         { id: ViewType.TESOURARIA, label: 'Fin.', icon: Wallet, roles: ['Admin'] },
-        { id: ViewType.CAMPO_MISSIONARIO, label: 'Missões', icon: Globe, roles: ['Admin', 'Secretaria'] },
+        { id: ViewType.CAMPO_MISSIONARIO, label: 'DP Missões', icon: Globe, roles: ['Admin', 'Secretaria'] },
         { id: ViewType.IA_ASSISTANT, label: 'IA', icon: Sparkles, roles: ['Admin', 'Secretaria', 'Membro'] },
         { id: ViewType.APP_MEMBRO, label: 'Membro', icon: UserCircle, roles: ['Admin', 'Secretaria', 'Membro'] },
         { id: ViewType.SETTINGS, label: 'Config.', icon: Globe, roles: ['Admin'] },
@@ -49,7 +49,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ currentView, onViewChange, userRo
                             key={item.id}
                             onClick={() => onViewChange(item.id)}
                             className={`flex flex-col items-center justify-center min-w-[72px] h-[64px] rounded-2xl transition-all duration-300 snap-center ${isActive
-                                ? 'text-red-600 bg-red-50/50 shadow-sm ring-1 ring-red-100/50'
+                                ? 'text-primary bg-primary-light shadow-sm ring-1 ring-primary/20'
                                 : 'text-slate-400 hover:text-slate-600 active:scale-95 hover:bg-slate-50'
                                 }`}
                         >

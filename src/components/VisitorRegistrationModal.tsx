@@ -71,21 +71,45 @@ export const VisitorRegistrationModal: React.FC<VisitorRegistrationModalProps> =
                             required
                             value={formData.date}
                             onChange={e => setFormData({ ...formData, date: e.target.value })}
-                            className="h-14 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all placeholder:text-slate-300"
+                            className="h-14 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all placeholder:text-slate-400"
                         />
                     </div>
 
                     <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block text-slate-400">DESCRIÇÃO DO CULTO</label>
-                        <Input
-                            type="text"
-                            required
-                            placeholder="Ex: Culto de Celebração"
-                            value={formData.description}
-                            onChange={e => setFormData({ ...formData, description: e.target.value })}
-                            className="h-14 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all placeholder:text-slate-300"
-                        />
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block text-slate-400">TIPO DE CULTO/EVENTO</label>
+                        <select
+                            className="w-full h-14 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all appearance-none cursor-pointer"
+                            value={['Culto de Domingo', 'Culto de Ensino', 'Incendiar'].includes(formData.description) ? formData.description : (formData.description === '' ? '' : 'Outro')}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === 'Outro') {
+                                    setFormData({ ...formData, description: '' });
+                                } else {
+                                    setFormData({ ...formData, description: val });
+                                }
+                            }}
+                        >
+                            <option value="">Selecione o Culto</option>
+                            <option value="Culto de Domingo">Culto de Domingo</option>
+                            <option value="Culto de Ensino">Culto de Ensino</option>
+                            <option value="Incendiar">Incendiar</option>
+                            <option value="Outro">Outro Evento...</option>
+                        </select>
                     </div>
+
+                    {!['Culto de Domingo', 'Culto de Ensino', 'Incendiar'].includes(formData.description) && (
+                        <div className="animate-fadeIn">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block text-slate-400">NOME DO EVENTO PERSONALIZADO</label>
+                            <Input
+                                type="text"
+                                required
+                                placeholder="Ex: Congresso de Jovens"
+                                value={formData.description}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                className="h-14 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all placeholder:text-slate-400"
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block flex justify-between items-center text-slate-400">
@@ -94,7 +118,7 @@ export const VisitorRegistrationModal: React.FC<VisitorRegistrationModalProps> =
                         </label>
                         <textarea
                             placeholder="Ex: Maria Souza, Pedro Santos..."
-                            className="w-full h-32 p-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all placeholder:text-slate-300 resize-none"
+                            className="w-full h-32 p-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-amber-600/5 focus:border-amber-600/20 outline-none transition-all placeholder:text-slate-400 resize-none"
                             value={formData.visitors}
                             onChange={e => setFormData({ ...formData, visitors: e.target.value })}
                         />
@@ -108,9 +132,14 @@ export const VisitorRegistrationModal: React.FC<VisitorRegistrationModalProps> =
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
                             <span className="relative z-10 flex items-center justify-center gap-3">
-                                {isSaving ? 'Gravando Dados...' : (
+                                {isSaving ? (
+                                    <span className="flex items-center gap-2">
+                                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        Gravando...
+                                    </span>
+                                ) : (
                                     <>
-                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" strokeWidth={3.5} /></svg>
+                                        <svg className="w-6 h-6 text-amber-400 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" strokeWidth={3.5} /></svg>
                                         Salvar Registro
                                     </>
                                 )}

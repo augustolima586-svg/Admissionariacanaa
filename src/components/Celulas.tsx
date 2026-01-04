@@ -18,7 +18,7 @@ const Celulas: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 p-4 !rounded-[2.5rem] h-[500px] relative overflow-hidden border-slate-100 shadow-sm">
           {/* Mapa Placeholder Simulando Grounding */}
-          <div className="w-full h-full bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-12 text-center">
+          <div className="w-full h-full bg-slate-100 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-12 text-center">
             <div className="p-5 bg-indigo-100 text-indigo-600 rounded-full mb-6">
               <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" strokeWidth={2} /></svg>
             </div>
@@ -51,7 +51,7 @@ const Celulas: React.FC = () => {
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Líder: <span className="text-slate-600">{cell.leader}</span></p>
-              <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between gap-3">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between gap-3">
                 <Button variant="outline" className="flex-1 h-touch text-[10px] px-0">Ver Mapa</Button>
                 <Button variant="outline" className="flex-1 h-touch text-[10px] px-0">Relatório</Button>
               </div>

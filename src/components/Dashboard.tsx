@@ -117,8 +117,11 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
 
     const pendingEntradas = pendingTransactions.filter(t => t.type === 'Entrada').reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
+    // Filter actual members for stats
+    const actualMembersCount = members.filter(m => m.status !== 'Novo Convertido' && m.status !== 'Consolidado' && m.status !== 'Visitante').length;
+
     return {
-      totalMembers: members.length,
+      totalMembers: actualMembersCount,
       totalBalance: entradas - saidas,
       pendingBalance: pendingEntradas,
       attendanceCount: attendanceRecords.length
@@ -127,7 +130,10 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
 
   const ageDistribution = useMemo(() => {
     const dist = { 'Crianças': 0, 'Adolescentes': 0, 'Jovens': 0, 'Adultos': 0 };
-    members.forEach(m => {
+    // Filter actual members for stats
+    const actualMembers = members.filter(m => m.status !== 'Novo Convertido' && m.status !== 'Consolidado' && m.status !== 'Visitante');
+
+    actualMembers.forEach(m => {
       const cat = m.ageGroup || 'Adulto';
       if (cat === 'Criança' || cat.includes('Criança')) dist['Crianças']++;
       else if (cat === 'Adolescente' || cat.includes('Adolescente')) dist['Adolescentes']++;
@@ -318,7 +324,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
   // NOVO: Estatísticas de Decisões (Novos Convertidos)
   const decisionStats = useMemo(() => {
     const now = new Date();
-    const newConverts = members.filter(m => m.status === 'Novo Convertido');
+    const newConverts = members.filter(m => m.status === 'Novo Convertido' || m.status === 'Consolidado');
 
     const monthCount = newConverts.filter(m => {
       const d = new Date(m.joinDate);
@@ -364,6 +370,32 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
   }, [members, attendanceRecords]);
 
 
+  // NOVO: Dados de decisões por culto e data (últimos 8 agrupamentos)
+  const eventsDecisionsData = useMemo(() => {
+    const decisions = members.filter(m => m.status === 'Novo Convertido' || m.status === 'Consolidado');
+    const groupings: Record<string, number> = {};
+
+    decisions.forEach(m => {
+      const date = m.joinDate || '2024-01-01'; // Fallback
+      const culto = m.decisionCulto || 'Não Identificado';
+      const key = `${date} | ${culto}`;
+      groupings[key] = (groupings[key] || 0) + 1;
+    });
+
+    return Object.entries(groupings)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-8)
+      .map(([key, count]) => {
+        const [datePart, cultoPart] = key.split(' | ');
+        const dateFormatted = new Date(datePart).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        return {
+          name: `${dateFormatted} ${cultoPart.length > 8 ? cultoPart.substring(0, 8) + '..' : cultoPart}`,
+          total: count,
+          fullLabel: `${dateFormatted} - ${cultoPart}`
+        };
+      });
+  }, [members]);
+
   const handleSaveAttendance = async (data: { date: string; description: string; visitors: string[] }) => {
     // setIsSaving is now handled inside VisitorRegistrationModal
     // We just handle the data persistence here
@@ -382,8 +414,8 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
   return (
     <div className="space-y-6 md:space-y-8 animate-fadeIn pb-20 font-sans">
       {memberData && (
-        <Card className="bg-gradient-to-r from-red-600 to-red-800 p-5 md:p-6 text-white shadow-2xl flex flex-col md:flex-row items-center gap-4 md:gap-6 animate-fadeIn border-none">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-red-600 text-3xl font-black shadow-lg uppercase">
+        <Card className="bg-gradient-to-r from-primary to-primary-hover p-5 md:p-6 text-white shadow-2xl flex flex-col md:flex-row items-center gap-4 md:gap-6 animate-fadeIn border-none">
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary text-3xl font-black shadow-lg uppercase">
             {memberData.name.charAt(0)}
           </div>
           <div className="flex-1 text-center md:text-left">
@@ -412,7 +444,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
         <StatCard
           title="Membros Cadastrados"
-          value={members.length.toString()}
+          value={stats.totalMembers.toString()}
           change="Total"
           color="indigo"
           icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
@@ -471,77 +503,112 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          <Card className="p-5 md:p-8 animate-fadeIn">
-            <h3 className="font-heading font-black text-slate-800 mb-6 uppercase tracking-widest text-[10px] flex items-center">
-              <div className="w-2 h-6 bg-red-600 rounded-full mr-4"></div>
-              Distribuição Etária
-            </h3>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={ageDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={72}
-                    outerRadius={88}
-                    paddingAngle={8}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {ageDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
-                    ))}
-                    <Label
-                      value={members.length}
-                      position="center"
-                      fill="#1e293b"
-                      dy={-4}
-                      style={{ fontSize: '28px', fontWeight: '900', fontFamily: 'Inter' }}
-                    />
-                    <Label
-                      value="TOTAL"
-                      position="center"
-                      dy={16}
-                      fill="#94a3b8"
-                      style={{ fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.2em' }}
-                    />
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <Card className="p-5 md:p-8 animate-fadeIn">
+          <h3 className="font-heading font-black text-slate-800 mb-6 uppercase tracking-widest text-[10px] flex items-center">
+            <div className="w-2 h-6 bg-primary rounded-full mr-4"></div>
+            Distribuição Etária
+          </h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={ageDistribution}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={72}
+                  outerRadius={88}
+                  paddingAngle={8}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {ageDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
+                  ))}
+                  <Label
+                    value={stats.totalMembers}
+                    position="center"
+                    fill="#1e293b"
+                    dy={-4}
+                    style={{ fontSize: '28px', fontWeight: '900', fontFamily: 'Inter' }}
                   />
-                  <Legend
-                    iconType="circle"
-                    verticalAlign="bottom"
-                    align="center"
-                    iconSize={8}
-                    wrapperStyle={{ paddingTop: '25px', paddingBottom: '10px' }}
-                    formatter={(value: string) => (
-                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider ml-1">{value}</span>
-                    )}
+                  <Label
+                    value="TOTAL"
+                    position="center"
+                    dy={16}
+                    fill="#94a3b8"
+                    style={{ fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.2em' }}
                   />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
+                </Pie>
+                <Tooltip
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                />
+                <Legend
+                  iconType="circle"
+                  verticalAlign="bottom"
+                  align="center"
+                  iconSize={8}
+                  wrapperStyle={{ paddingTop: '25px', paddingBottom: '10px' }}
+                  formatter={(value: string) => (
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider ml-1">{value}</span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-          <Card className="p-5 md:p-8">
-            <h3 className="font-heading font-black text-slate-800 uppercase text-[10px] tracking-widest mb-6">Discípulos Recentes</h3>
-            <div className="space-y-4">
-              {[...members].reverse().slice(0, 4).map((member) => (
-                <div key={member.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center">
-                  <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black mr-4 shadow-sm uppercase">{member.name.charAt(0)}</div>
+        <Card className="p-5 md:p-8">
+          <h3 className="font-heading font-black text-slate-800 uppercase text-[10px] tracking-widest mb-6 border-l-2 border-indigo-500 pl-4">Membros Recentes</h3>
+          <div className="space-y-3">
+            {[...members].filter(m => !['Novo Convertido', 'Consolidado'].includes(m.status)).reverse().slice(0, 4).map((member) => (
+              <div key={member.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center group hover:bg-white hover:shadow-sm transition-all">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black mr-3 shadow-sm uppercase text-xs">{member.name.charAt(0)}</div>
+                <div className="flex-1 overflow-hidden">
+                  <h4 className="text-[11px] font-heading font-black text-slate-800 truncate uppercase tracking-tighter">{member.name}</h4>
+                  <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">{member.category}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-5 md:p-8">
+          <h3 className="font-heading font-black text-slate-800 uppercase text-[10px] tracking-widest mb-6 border-l-2 border-amber-500 pl-4">Decisões Recentes</h3>
+          <div className="space-y-3">
+            {[...members]
+              .filter(m => m.status === 'Novo Convertido' || m.status === 'Consolidado')
+              .sort((a, b) => {
+                const dateA = a.joinDate ? new Date(a.joinDate).getTime() : 0;
+                const dateB = b.joinDate ? new Date(b.joinDate).getTime() : 0;
+                return dateB - dateA;
+              })
+              .slice(0, 4)
+              .map((member) => (
+                <div key={member.id} className="p-3 bg-amber-50/30 rounded-xl border border-amber-100/50 flex items-center group hover:bg-white hover:shadow-sm transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center font-black mr-3 shadow-sm uppercase text-xs">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" strokeWidth={2.5} /></svg>
+                  </div>
                   <div className="flex-1 overflow-hidden">
-                    <h4 className="text-[11px] font-heading font-black text-slate-800 truncate uppercase tracking-tighter">{member.name}</h4>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase">{member.category} • {member.ageGroup || 'Adulto'}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-[11px] font-heading font-black text-slate-800 truncate uppercase tracking-tighter">{member.name}</h4>
+                      {member.status === 'Consolidado' && (
+                        <span className="text-[7px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter shrink-0">Acompanhado</span>
+                      )}
+                    </div>
+                    <p className="text-[8px] text-amber-600 font-bold uppercase tracking-widest truncate">
+                      {member.consolidatorName ? `Por: ${member.consolidatorName}` : (member.decisionCulto || 'Novo Convertido')}
+                    </p>
                   </div>
                 </div>
               ))}
-            </div>
-          </Card>
-        </div>
+            {[...members].filter(m => m.status === 'Novo Convertido' || m.status === 'Consolidado').length === 0 && (
+              <div className="py-10 text-center">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nenhuma decisão recente</p>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -559,7 +626,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h4 className="text-[9px] font-heading font-black text-slate-400 uppercase tracking-widest text-center">Quantidade por Culto</h4>
+              <h4 className="text-[9px] font-heading font-black text-slate-400 uppercase tracking-widest text-center">Visitantes por Culto</h4>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={eventsVisitorsData}>
@@ -601,6 +668,27 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-slate-100">
+            <h4 className="text-[9px] font-heading font-black text-slate-400 uppercase tracking-widest text-center mb-6">Novas Decisões por Culto e Data</h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={eventsDecisionsData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 8 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 9 }} allowDecimals={false} />
+                  <Tooltip
+                    cursor={{ fill: '#f1f5f9' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', fontSize: '10px' }}
+                    formatter={(value: any, name: any, props: any) => [value, props.payload.fullLabel]}
+                  />
+                  <Bar dataKey="total" fill="#fbbf24" radius={[6, 6, 0, 0]} barSize={40}>
+                    <LabelList dataKey="total" position="top" fontSize={12} fontWeight="black" fill="#b45309" offset={10} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </Card>
@@ -778,7 +866,7 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
 
         <Card className="p-8 animate-fadeIn">
           <h3 className="font-heading font-black text-slate-800 mb-6 uppercase tracking-widest text-[10px] flex items-center">
-            <div className="w-2 h-6 bg-red-600 rounded-full mr-4"></div>
+            <div className="w-2 h-6 bg-primary rounded-full mr-4"></div>
             Gastos por Categoria
           </h3>
           <div className="h-64">
@@ -792,8 +880,8 @@ const Dashboard: React.FC<DashboardProps> = ({ members, transactions, attendance
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                   formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
                 />
-                <Bar dataKey="value" name="Total Gasto" fill="#ef4444" radius={[0, 4, 4, 0]}>
-                  <LabelList dataKey="value" position="right" fontSize={10} fontWeight="black" fill="#ef4444" offset={10} formatter={(value: any) => typeof value === 'number' ? `R$ ${value.toLocaleString('pt-BR')}` : value} />
+                <Bar dataKey="value" name="Total Gasto" fill="var(--primary)" radius={[0, 4, 4, 0]}>
+                  <LabelList dataKey="value" position="right" fontSize={10} fontWeight="black" fill="var(--primary)" offset={10} formatter={(value: any) => typeof value === 'number' ? `R$ ${value.toLocaleString('pt-BR')}` : value} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

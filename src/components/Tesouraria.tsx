@@ -156,12 +156,12 @@ const Tesouraria: React.FC<TesourariaProps> = ({ transactions, onSaveTransaction
         {/* Date Filter & Status Toggle */}
         <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
           <div className="flex gap-2">
-            <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-slate-900/10">
+            <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-slate-900/10">
               {Array.from({ length: 12 }, (_, i) => i).map(m => (
                 <option key={m} value={m}>{new Date(0, m).toLocaleString('pt-BR', { month: 'long' }).toUpperCase()}</option>
               ))}
             </select>
-            <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-slate-900/10">
+            <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-slate-900/10">
               <option value="2024">2024</option>
               <option value="2025">2025</option>
               <option value="2026">2026</option>
@@ -370,7 +370,7 @@ const Tesouraria: React.FC<TesourariaProps> = ({ transactions, onSaveTransaction
                   type="number"
                   step="0.01"
                   required
-                  className="h-20 text-3xl font-black px-8 bg-slate-50 border-slate-100 rounded-[2rem] text-slate-800 focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 placeholder:text-slate-200 outline-none transition-all"
+                  className="h-20 text-3xl font-black px-8 bg-slate-100 border-slate-200 rounded-[2rem] text-slate-800 focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 placeholder:text-slate-400 outline-none transition-all"
                   placeholder="0,00"
                   value={formData.amount}
                   onChange={e => setFormData({ ...formData, amount: e.target.value })}
@@ -380,21 +380,21 @@ const Tesouraria: React.FC<TesourariaProps> = ({ transactions, onSaveTransaction
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ponto de Lançamento</label>
-                  <select className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 outline-none transition-all" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })}>
+                  <select className="w-full h-14 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 outline-none transition-all" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })}>
                     <option value="Sede">Sede Central</option>
                     {missionFields.map(f => <option key={f.id} value={f.name}>{f.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria Contábil</label>
-                  <select className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 outline-none transition-all" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
+                  <select className="w-full h-14 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 outline-none transition-all" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
                     {modalType === 'Entrada' ? <><option value="Dízimo">Dízimo Ministerial</option><option value="Oferta">Oferta de Amor</option><option value="EBD">Oferta EBD</option><option value="Outros">Outros Lançamentos</option></> : saidaCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações / Auditoria</label>
-                <textarea className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 resize-none h-32 focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 outline-none transition-all placeholder:text-slate-200" placeholder="Detalhes adicionais do lançamento..." value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
+                <textarea className="w-full px-8 py-6 bg-slate-100 border border-slate-200 rounded-[2.5rem] text-sm font-black text-slate-800 resize-none h-32 focus:ring-8 focus:ring-slate-900/5 focus:border-slate-900/10 outline-none transition-all placeholder:text-slate-400" placeholder="Detalhes adicionais do lançamento..." value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
               </div>
               <button
                 type="submit"

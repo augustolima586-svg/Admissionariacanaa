@@ -304,7 +304,7 @@ const EBD: React.FC<EBDProps> = ({
     <div className="space-y-8 animate-fadeIn">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-3xl font-heading font-black text-slate-900 tracking-tight italic leading-tight">EBD - Escola Bíblica</h2>
+          <h2 className="text-3xl font-heading font-black text-slate-900 tracking-tight italic leading-tight">Escola Bíblica - EBD</h2>
           <p className="text-slate-500 font-medium">Gestão dinâmica de classes, critérios e matrículas.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -324,15 +324,15 @@ const EBD: React.FC<EBDProps> = ({
               {showClassMenu && (
                 <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-40 animate-fadeIn">
                   <div className="p-1.5 space-y-0.5">
-                    <button onClick={() => openClassModal('create')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all flex items-center gap-3 group">
+                    <button onClick={() => openClassModal('create')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 hover:text-indigo-600 rounded-xl transition-all flex items-center gap-3 group">
                       <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 font-black group-hover:bg-indigo-600 group-hover:text-white transition-colors text-[9px]">1</span>
                       Criar Classe
                     </button>
-                    <button onClick={() => openClassModal('edit')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl transition-all flex items-center gap-3 group">
+                    <button onClick={() => openClassModal('edit')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 hover:text-indigo-600 rounded-xl transition-all flex items-center gap-3 group">
                       <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 font-black group-hover:bg-indigo-600 group-hover:text-white transition-colors text-[9px]">2</span>
                       Editar Classe
                     </button>
-                    <button onClick={() => openClassModal('delete')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 hover:text-red-600 rounded-xl transition-all flex items-center gap-3 group">
+                    <button onClick={() => openClassModal('delete')} className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 hover:text-red-600 rounded-xl transition-all flex items-center gap-3 group">
                       <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-red-50 text-red-600 font-black group-hover:bg-red-600 group-hover:text-white transition-colors text-[9px]">3</span>
                       Excluir Classe
                     </button>
@@ -406,7 +406,7 @@ const EBD: React.FC<EBDProps> = ({
       </div>
 
       <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between bg-slate-50/50 gap-4">
+        <div className="p-8 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between bg-slate-100/50 gap-4">
           <h3 className="font-heading font-black text-slate-800 uppercase text-xs tracking-[0.2em]">Ficha de Alunos Matriculados</h3>
           <div className="relative w-full sm:w-80">
             <Input
@@ -423,7 +423,7 @@ const EBD: React.FC<EBDProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-[10px] uppercase font-black text-slate-400 tracking-widest border-b border-slate-100 bg-slate-50/20">
+              <tr className="text-[10px] uppercase font-black text-slate-400 tracking-widest border-b border-slate-200 bg-slate-100/20">
                 <th className="px-10 py-6">Nome do Aluno</th>
                 <th className="px-10 py-6">Critério Etário</th>
                 <th className="px-10 py-6">Classe Vinculada</th>
@@ -432,7 +432,7 @@ const EBD: React.FC<EBDProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredStudents.map(student => (
-                <tr key={student.id} onClick={() => handleOpenStudentDetails(student)} className="hover:bg-slate-50/80 transition-all cursor-pointer group">
+                <tr key={student.id} onClick={() => handleOpenStudentDetails(student)} className="hover:bg-slate-100/80 transition-all cursor-pointer group">
                   <td className="px-10 py-6 font-bold text-slate-800 text-sm">{student.name}</td>
                   <td className="px-10 py-6 text-xs font-medium text-slate-500">{student.ageGroup}</td>
                   <td className="px-10 py-6">
@@ -456,7 +456,7 @@ const EBD: React.FC<EBDProps> = ({
       {/* Seção de Histórico Financeiro da EBD (Exclusivo para Gestores) */}
       {isManager && (
         <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden mt-8">
-          <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between bg-slate-50/50 gap-4">
+          <div className="p-8 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between bg-slate-100/50 gap-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shadow-lg shadow-emerald-100">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -470,7 +470,7 @@ const EBD: React.FC<EBDProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[10px] uppercase font-black text-slate-400 tracking-widest border-b border-slate-100 bg-slate-50/20">
+                <tr className="text-[10px] uppercase font-black text-slate-400 tracking-widest border-b border-slate-200 bg-slate-100/20">
                   <th className="px-10 py-6">Data</th>
                   <th className="px-10 py-6">Origem (Classe)</th>
                   <th className="px-10 py-6">Tipo/Membro</th>
@@ -484,7 +484,7 @@ const EBD: React.FC<EBDProps> = ({
                   .filter(t => t.notes?.includes('EBD') || t.category === 'EBD')
                   .sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime())
                   .map(transaction => (
-                    <tr key={transaction.id} className="hover:bg-slate-50/80 transition-all group">
+                    <tr key={transaction.id} className="hover:bg-slate-100/80 transition-all group">
                       <td className="px-10 py-6 text-[10px] text-slate-400 font-black">{new Date(transaction.date || '').toLocaleDateString('pt-BR')}</td>
                       <td className="px-10 py-6">
                         <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200">
@@ -586,7 +586,7 @@ const EBD: React.FC<EBDProps> = ({
                         placeholder="Ex: Berçário Arca de Noé"
                         value={classForm.name}
                         onChange={e => setClassForm({ ...classForm, name: e.target.value })}
-                        className="h-14 px-6 bg-white border border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600/20 outline-none transition-all placeholder:text-slate-300"
+                        className="h-14 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600/20 outline-none transition-all placeholder:text-slate-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -596,13 +596,13 @@ const EBD: React.FC<EBDProps> = ({
                         placeholder="Nome do Professor..."
                         value={classForm.teacherName}
                         onChange={e => setClassForm({ ...classForm, teacherName: e.target.value })}
-                        className="h-14 px-6 bg-white border border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600/20 outline-none transition-all placeholder:text-slate-300"
+                        className="h-14 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600/20 outline-none transition-all placeholder:text-slate-400"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Público Alvo</label>
-                      <select className="w-full px-6 h-14 bg-white border border-slate-200 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600/20 outline-none transition-all cursor-pointer" value={classForm.ageGroupCriterion} onChange={e => setClassForm({ ...classForm, ageGroupCriterion: e.target.value })}>
+                      <select className="w-full px-6 h-14 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none focus:ring-8 focus:ring-indigo-600/5 focus:border-indigo-600/20 outline-none transition-all cursor-pointer" value={classForm.ageGroupCriterion} onChange={e => setClassForm({ ...classForm, ageGroupCriterion: e.target.value })}>
                         {ageGroups.map(ag => <option key={ag} value={ag}>{ag}</option>)}
                       </select>
                     </div>
@@ -693,14 +693,22 @@ const EBD: React.FC<EBDProps> = ({
               </div>
               <div className="p-10 space-y-8">
                 {showPixInfo && (
-                  <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col items-center text-center space-y-4 shadow-xl">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Chave Pix Oficial</p>
-                      <p className="text-sm font-bold">{pixKey}</p>
+                  <div className="bg-slate-900 border border-slate-800 text-white p-6 rounded-[2rem] flex flex-col items-center text-center space-y-4 shadow-xl relative overflow-hidden group/pix">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover/pix:bg-emerald-500/10 transition-all duration-700"></div>
+
+                    <div className="relative z-10 w-full">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Chave Pix Oficial</p>
+                      <div
+                        className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800/50 flex flex-col sm:flex-row items-center justify-center gap-3 hover:border-emerald-500/30 transition-all cursor-pointer active:scale-95"
+                        onClick={() => { navigator.clipboard.writeText(pixKey); alert('Chave Pix copiada!'); }}
+                      >
+                        <p className="text-sm sm:text-lg font-black text-white tracking-widest sm:tracking-[0.1em] break-all">{pixKey}</p>
+                        <div className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-emerald-500/20 transition-all shrink-0">
+                          <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" strokeWidth={2} /></svg>
+                        </div>
+                      </div>
+                      <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-4">Toque para copiar a chave</p>
                     </div>
-                    <button type="button" onClick={() => { navigator.clipboard.writeText(pixKey); alert('Chave Pix copiada!'); }} className="px-6 py-2 bg-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all">
-                      Copiar Chave
-                    </button>
                   </div>
                 )}
 
@@ -743,7 +751,7 @@ const EBD: React.FC<EBDProps> = ({
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identificar Membro</label>
                       <select
                         required
-                        className="w-full px-6 h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-emerald-600/5 focus:border-emerald-600/20 outline-none transition-all pr-12"
+                        className="w-full px-6 h-14 bg-slate-100 border-2 border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-emerald-600/5 focus:border-emerald-600/20 outline-none transition-all pr-12"
                         value={offeringMemberId}
                         onChange={e => setOfferingMemberId(e.target.value)}
                       >
@@ -762,7 +770,7 @@ const EBD: React.FC<EBDProps> = ({
                     type="number"
                     step="0.01"
                     required
-                    className="h-20 text-3xl font-black px-8 bg-slate-50 border-slate-100 rounded-[2rem] text-emerald-600 focus:ring-8 focus:ring-emerald-600/5 focus:border-emerald-600/20 outline-none transition-all placeholder:text-slate-200"
+                    className="h-20 text-3xl font-black px-8 bg-slate-100 border-slate-200 rounded-[2rem] text-emerald-600 focus:ring-8 focus:ring-emerald-600/5 focus:border-emerald-600/20 outline-none transition-all placeholder:text-slate-400"
                     placeholder="0,00"
                     value={offeringAmount}
                     onChange={e => setOfferingAmount(e.target.value)}
@@ -837,20 +845,20 @@ const EBD: React.FC<EBDProps> = ({
                     placeholder="Nome do discípulo..."
                     value={studentForm.name}
                     onChange={e => setStudentForm({ ...studentForm, name: e.target.value })}
-                    className="h-14 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300"
+                    className="h-14 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Perfil Etário</label>
-                    <select className="w-full px-6 h-14 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={studentForm.ageGroup} onChange={e => setStudentForm({ ...studentForm, ageGroup: e.target.value })}>
+                    <select className="w-full px-6 h-14 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={studentForm.ageGroup} onChange={e => setStudentForm({ ...studentForm, ageGroup: e.target.value })}>
                       {ageGroups.map(ag => <option key={ag} value={ag}>{ag}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classe</label>
-                    <select className="w-full px-6 h-14 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={studentForm.className} onChange={e => setStudentForm({ ...studentForm, className: e.target.value })}>
+                    <select className="w-full px-6 h-14 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-xs uppercase tracking-widest appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={studentForm.className} onChange={e => setStudentForm({ ...studentForm, className: e.target.value })}>
                       <option value="">Selecione a Classe...</option>
                       {allAvailableClasses.map(className => <option key={className} value={className}>{className}</option>)}
                     </select>
@@ -894,7 +902,7 @@ const EBD: React.FC<EBDProps> = ({
                   <Input
                     type="text"
                     placeholder="Pesquisar membro para matrícula..."
-                    className="pl-14 h-14 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300"
+                    className="pl-14 h-14 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400"
                     value={memberSearchTerm}
                     onChange={(e) => setMemberSearchTerm(e.target.value)}
                   />
@@ -966,7 +974,7 @@ const EBD: React.FC<EBDProps> = ({
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unidade / Classe</label>
                     <div className="relative">
                       <select
-                        className="w-full px-6 h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all pr-12"
+                        className="w-full px-6 h-14 bg-slate-100 border-2 border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all pr-12"
                         value={attendanceForm.className}
                         onChange={e => setAttendanceForm({ ...attendanceForm, className: e.target.value })}
                       >
@@ -981,7 +989,7 @@ const EBD: React.FC<EBDProps> = ({
                 </div>
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alunos Matriculados (Chamada Nominal)</label>
-                  <div className="max-h-60 overflow-y-auto space-y-2 p-4 bg-slate-50 rounded-[2rem] border border-slate-200/50 custom-scrollbar">
+                  <div className="max-h-60 overflow-y-auto space-y-2 p-4 bg-slate-100 rounded-[2rem] border border-slate-300/50 custom-scrollbar">
                     {!attendanceForm.className ? (
                       <div className="text-center py-10">
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-relaxed italic">Aguardando seleção<br />da classe...</p>
@@ -1130,7 +1138,7 @@ const EBD: React.FC<EBDProps> = ({
             </div>
             <form onSubmit={handleAddStudent} className="p-10 space-y-8">
               <div className="space-y-4">
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 italic">
+                <div className="bg-slate-100 p-6 rounded-2xl border border-slate-200 italic">
                   <p className="text-xs text-slate-500 leading-relaxed">
                     Olá <strong>{currentUser.name}</strong>, selecione abaixo a classe em que deseja se matricular. Seus dados básicos já estão vinculados ao seu perfil.
                   </p>
@@ -1140,7 +1148,7 @@ const EBD: React.FC<EBDProps> = ({
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classe de Ensino</label>
                   <select
                     required
-                    className="w-full px-6 h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-emerald-600/5 focus:border-emerald-600/20 outline-none transition-all pr-12"
+                    className="w-full px-6 h-14 bg-slate-100 border-2 border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-emerald-600/5 focus:border-emerald-600/20 outline-none transition-all pr-12"
                     value={studentForm.className}
                     onChange={e => setStudentForm({ ...studentForm, className: e.target.value })}
                   >

@@ -21,6 +21,13 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User>({ id: '', name: '', role: 'Membro', isAuthenticated: false });
   const [currentView, setCurrentView] = useState<ViewType>(ViewType.DASHBOARD);
   const [appLogo, setAppLogo] = useState('https://i.postimg.cc/s2QxyHH7/Logo_01.png');
+  const [appTheme, setAppTheme] = useState(localStorage.getItem('canaa_theme') || 'default');
+
+  // Aplicar tema globalmente
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', appTheme);
+    localStorage.setItem('canaa_theme', appTheme);
+  }, [appTheme]);
 
   const [members, setMembers] = useState<Member[]>([]);
   const [missionFields, setMissionFields] = useState<MissionField[]>([]);
@@ -50,7 +57,11 @@ const App: React.FC = () => {
           joinDate: m.join_date,
           baptismDate: m.baptism_date,
           birthDate: m.birth_date,
-          contributions: 0
+          contributions: 0,
+          decisionCulto: m.decision_culto,
+          consolidatorName: m.consolidator_name,
+          custom_permissions: m.custom_permissions || [], // Mapeamento para persistência
+          customPermissions: m.custom_permissions || [] // Mapeamento para UI
         })));
       }
 
@@ -267,29 +278,35 @@ const App: React.FC = () => {
   }, [loadData, user.isAuthenticated]);
 
   const handleSaveMember = async (m: Omit<Member, 'id' | 'contributions'>) => {
-    const payload = {
+    // Audit payload to match Supabase schema exactly
+    const payload: any = {
       name: m.name,
-      email: m.email,
-      phone: m.phone,
-      status: m.status,
-      category: m.category,
+      email: m.email || null,
+      phone: m.phone || null,
+      status: m.status || 'Ativo',
+      category: m.category || 'Membro',
       congregacao: m.congregacao || 'Sede',
-      age_group: m.ageGroup,
-      join_date: m.joinDate,
+      age_group: m.ageGroup || 'Adulto',
+      join_date: m.joinDate || new Date().toISOString().split('T')[0],
       baptism_date: m.baptismDate || null,
       birth_date: m.birthDate || null,
       rua: m.rua || null,
       numero: m.numero || null,
       bairro: m.bairro || null,
       cep: m.cep || null,
-      password: m.password
+      password: m.password || null,
+      custom_permissions: m.customPermissions || [],
+      decision_culto: m.decisionCulto || null,
+      consolidator_name: m.consolidatorName || null
     };
+
+    // Note: 'country' is excluded for now until DB column is verified
+    // if (m.country) payload.country = m.country;
 
     if (!isOnline) {
       syncService.enqueue('members', 'INSERT', payload);
       setPendingSyncs(syncService.getQueueSize());
       alert('Modo Offline: Membro salvo localmente e será sincronizado quando houver internet.');
-      // Local optimistic update
       setMembers(prev => [{ ...m, id: 'temp-' + Date.now(), contributions: 0 } as Member, ...prev]);
       return null;
     }
@@ -300,21 +317,42 @@ const App: React.FC = () => {
   };
 
   const handleUpdateMember = async (id: string, m: Partial<Member>) => {
-    const payload: any = { ...m };
-    if (m.ageGroup) payload.age_group = m.ageGroup;
-    if (m.joinDate) payload.join_date = m.joinDate;
+    // Audit payload to match Supabase schema exactly and avoid type-any leaks
+    const payload: any = {};
+
+    if (m.name !== undefined) payload.name = m.name;
+    if (m.email !== undefined) payload.email = m.email || null;
+    if (m.phone !== undefined) payload.phone = m.phone || null;
+    if (m.status !== undefined) payload.status = m.status;
+    if (m.category !== undefined) payload.category = m.category;
+    if (m.congregacao !== undefined) payload.congregacao = m.congregacao;
+    if (m.ageGroup !== undefined) payload.age_group = m.ageGroup;
+    if (m.joinDate !== undefined) payload.join_date = m.joinDate;
     if (m.baptismDate !== undefined) payload.baptism_date = m.baptismDate || null;
     if (m.birthDate !== undefined) payload.birth_date = m.birthDate || null;
+    if (m.rua !== undefined) payload.rua = m.rua || null;
+    if (m.numero !== undefined) payload.numero = m.numero || null;
+    if (m.bairro !== undefined) payload.bairro = m.bairro || null;
+    if (m.cep !== undefined) payload.cep = m.cep || null;
+    if (m.password !== undefined) payload.password = m.password || null;
+    if (m.customPermissions !== undefined) payload.custom_permissions = m.customPermissions;
+    if (m.decisionCulto !== undefined) payload.decision_culto = m.decisionCulto || null;
+    if (m.consolidatorName !== undefined) payload.consolidator_name = m.consolidatorName || null;
 
-    delete payload.ageGroup;
-    delete payload.joinDate;
-    delete payload.baptismDate;
-    delete payload.birthDate;
-    delete payload.contributions;
-    delete payload.id;
+    // Note: 'contributions' and 'id' should never be in the payload
+    // 'country' is commented out until verified in DB schema
+    // if (m.country !== undefined) payload.country = m.country || null;
+
+    // Optimistic update for immediate UI feedback
+    setMembers(prev => prev.map(member => member.id === id ? { ...member, ...m } : member));
 
     const { error } = await supabase.from('members').update(payload).eq('id', id);
-    if (!error) loadData();
+    if (!error) {
+      loadData();
+    } else {
+      // Rollback on error
+      loadData();
+    }
     return error;
   };
 
@@ -713,13 +751,25 @@ const App: React.FC = () => {
           onUpdateResidenceServiceStatus={handleUpdateResidenceServiceStatus}
           onUpdatePrayerStatus={handleUpdatePrayerStatus}
           setAttendanceRecords={async (r) => {
-            // Performance Fix (Dashboard View): Direct State Update
-            const payload = { ...r, created_at: new Date().toISOString() };
-            const { data, error } = await supabase.from('attendance_records').insert([payload]).select();
-            if (!error && data) {
-              setAttendanceRecords(prev => [data[0], ...prev]);
+            // Collaborative Listing Logic: Upsert based on date + normalized description
+            const normalizedDesc = r.description?.trim().toUpperCase();
+
+            // Query records for same date, then find matching description in JS (case-insensitive)
+            const { data: existingRecords } = await supabase.from('attendance_records').select('*').eq('date', r.date);
+            const existing = existingRecords?.find(rec => rec.description?.trim().toUpperCase() === normalizedDesc);
+
+            if (existing) {
+              const mergedVisitors = Array.from(new Set([...(existing.visitors || []), ...(r.visitors || [])]));
+              const { error } = await supabase.from('attendance_records').update({ visitors: mergedVisitors }).eq('id', existing.id);
+              if (!error) loadData();
             } else {
-              loadData();
+              const payload = { ...r, created_at: new Date().toISOString() };
+              const { data, error } = await supabase.from('attendance_records').insert([payload]).select();
+              if (!error && data) {
+                setAttendanceRecords(prev => [data[0], ...prev]);
+              } else {
+                loadData();
+              }
             }
           }}
         />;
@@ -786,13 +836,54 @@ const App: React.FC = () => {
         />
       );
       case ViewType.IA_ASSISTANT: return <AITools />;
-      case ViewType.SETTINGS: return <Settings currentLogo={appLogo} onUpdateLogo={setAppLogo} members={members} onUpdateMember={handleUpdateMember} />;
+      case ViewType.SETTINGS: return <Settings currentLogo={appLogo} onUpdateLogo={setAppLogo} currentTheme={appTheme} onUpdateTheme={setAppTheme} members={members} onUpdateMember={handleUpdateMember} />;
       case ViewType.HISTORIA: return <Historia />;
       case ViewType.RECEPCAO: return (
         <Recepcao
           members={members}
           attendanceRecords={attendanceRecords}
           setAttendanceRecords={async (r) => {
+            // Collaborative Listing Logic: Upsert based on date + normalized description
+            const normalizedDesc = r.description?.trim().toUpperCase();
+
+            // Query records for same date, then find matching description in JS (case-insensitive)
+            const { data: existingRecords } = await supabase.from('attendance_records').select('*').eq('date', r.date);
+            const existing = existingRecords?.find(rec => rec.description?.trim().toUpperCase() === normalizedDesc);
+
+            if (existing) {
+              const mergedVisitors = Array.from(new Set([...(existing.visitors || []), ...(r.visitors || [])]));
+              const { error } = await supabase.from('attendance_records').update({ visitors: mergedVisitors }).eq('id', existing.id);
+              if (!error) loadData();
+            } else {
+              const payload = { ...r, created_at: new Date().toISOString() };
+              const { data, error } = await supabase.from('attendance_records').insert([payload]).select();
+              if (!error && data) {
+                setAttendanceRecords(prev => [data[0], ...prev]);
+              } else {
+                loadData();
+              }
+            }
+          }}
+          onSaveMember={handleSaveMember}
+          onUpdateMember={handleUpdateMember}
+        />
+      );
+      default: return <Dashboard
+
+        {...commonProps}
+        setAttendanceRecords={async (r) => {
+          // Collaborative Listing Logic: Upsert based on date + normalized description
+          const normalizedDesc = r.description?.trim().toUpperCase();
+
+          // Query records for same date, then find matching description in JS (case-insensitive)
+          const { data: existingRecords } = await supabase.from('attendance_records').select('*').eq('date', r.date);
+          const existing = existingRecords?.find(rec => rec.description?.trim().toUpperCase() === normalizedDesc);
+
+          if (existing) {
+            const mergedVisitors = Array.from(new Set([...(existing.visitors || []), ...(r.visitors || [])]));
+            const { error } = await supabase.from('attendance_records').update({ visitors: mergedVisitors }).eq('id', existing.id);
+            if (!error) loadData();
+          } else {
             const payload = { ...r, created_at: new Date().toISOString() };
             const { data, error } = await supabase.from('attendance_records').insert([payload]).select();
             if (!error && data) {
@@ -800,24 +891,6 @@ const App: React.FC = () => {
             } else {
               loadData();
             }
-          }}
-          onSaveMember={handleSaveMember}
-        />
-      );
-      default: return <Dashboard
-
-        {...commonProps}
-        setAttendanceRecords={async (r) => {
-          // Performance Fix: Optimistic Update / Return Insert
-          // Instead of reloading ALL data (loadData), we just insert and update the local list
-          const payload = { ...r, created_at: new Date().toISOString() };
-          const { data, error } = await supabase.from('attendance_records').insert([payload]).select();
-
-          if (!error && data) {
-            setAttendanceRecords(prev => [data[0], ...prev]);
-          } else {
-            // Fallback in case of error, ensuring consistent state
-            loadData();
           }
         }}
       />;
@@ -892,8 +965,6 @@ const App: React.FC = () => {
 
         {renderView()}
       </main>
-
-
     </div>
   );
 };

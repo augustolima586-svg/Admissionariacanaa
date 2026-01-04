@@ -31,7 +31,7 @@ const Ensino: React.FC = () => {
             </div>
             <h3 className="text-lg font-heading font-black text-slate-900 mb-1">{school.name}</h3>
             <p className="text-xs text-slate-500 font-bold mb-4">Gestor: {school.manager}</p>
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-50">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
               <span className="text-xs font-black text-red-600">{school.students} Alunos</span>
               <button className="text-[10px] font-black uppercase text-slate-400 hover:text-red-600 transition-colors tracking-widest">Gerenciar</button>
             </div>
@@ -47,7 +47,7 @@ const Ensino: React.FC = () => {
             { class: 'Casais - Fortalecendo a Aliança', teacher: 'Prs. Nelson e Lúcia', pres: '88%', status: 'Finalizando' },
             { class: 'Novos Convertidos', teacher: 'Diác. Fábio', pres: '100%', status: 'Ativa' },
           ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors group">
+            <div key={i} className="flex items-center justify-between p-4 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-colors group">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-red-600 font-bold mr-4">
                   {i + 1}

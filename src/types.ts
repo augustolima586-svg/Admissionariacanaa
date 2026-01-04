@@ -1,7 +1,7 @@
 
 export type Role = 'Admin' | 'Secretaria' | 'Membro';
 // Added 'Novo Convertido' to MemberStatus
-export type MemberStatus = 'Visitante' | 'Frequentador' | 'Ativo' | 'Em Observação' | 'Inativo' | 'Novo Convertido';
+export type MemberStatus = 'Visitante' | 'Frequentador' | 'Ativo' | 'Em Observação' | 'Inativo' | 'Novo Convertido' | 'Consolidado';
 
 export interface User {
   id: string;
@@ -48,6 +48,8 @@ export interface Member {
   contributions: number;
   password?: string;
   customPermissions?: ViewType[];
+  decisionCulto?: string;
+  consolidatorName?: string;
 }
 
 export interface AttendanceRecord {

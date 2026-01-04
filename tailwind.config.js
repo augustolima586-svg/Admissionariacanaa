@@ -6,6 +6,17 @@ module.exports = {
     ],
     theme: {
         extend: {
+            colors: {
+                primary: {
+                    DEFAULT: 'var(--primary)',
+                    hover: 'var(--primary-hover)',
+                    dark: 'var(--primary-dark)',
+                    shadow: 'var(--primary-shadow)',
+                    light: 'var(--primary-light)',
+                    text: 'var(--primary-text)',
+                    glow: 'var(--primary-glow)',
+                }
+            },
             borderRadius: {
                 lg: "12px",
             },

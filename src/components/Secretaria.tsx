@@ -35,6 +35,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
   // Estado para Mensagens em Massa
   const [massMessage, setMassMessage] = useState({ title: '', content: '', type: 'Alerta de Culto' });
   const [isSending, setIsSending] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -54,7 +55,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
     country: 'Brasil'
   });
 
-  const cargoOptions = ["Pastor", "Evangelista", "Presbítero", "Diácono", "Diaconisa", "Missionário", "Missionária", "Líder", "Obreiro", "Obreira", "Membro", "Músico"];
+  const cargoOptions = ["Pastor(a)", "Evangelista", "Presbítero", "Diácono(a)", "Missionário(a)", "Líder", "Obreiro(a)", "Membro", "Louvor"];
   const statusOptions: MemberStatus[] = ["Ativo", "Frequentador", "Visitante", "Em Observação", "Inativo"];
 
   const handleOpenAddModal = () => {
@@ -92,12 +93,29 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditMode && editingId) {
-      await onUpdateMember(editingId, { ...formData });
-    } else {
-      await onSaveMember({ ...formData, joinDate: new Date().toISOString().split('T')[0] });
+    if (isSaving) return;
+
+    setIsSaving(true);
+    let error;
+    try {
+      if (isEditMode && editingId) {
+        error = await onUpdateMember(editingId, { ...formData });
+      } else {
+        error = await onSaveMember({ ...formData, joinDate: new Date().toISOString().split('T')[0] });
+      }
+
+      if (error) {
+        console.error("Erro Supabase:", error);
+        alert(`Erro ao salvar membro: ${error.message || 'Erro desconhecido'}`);
+      } else {
+        setIsModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Erro Crítico:", err);
+      alert("Ocorreu um erro inesperado ao salvar os dados.");
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   const handleSendMassMessage = async (e: React.FormEvent) => {
@@ -207,9 +225,16 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
           <p className="text-slate-500 font-medium text-sm">Gestão de membros e comunicação oficial.</p>
         </div>
         <div className="flex gap-3">
-          <Button onClick={handleOpenAddModal} className="bg-red-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-red-700 hover:shadow-red-200 transition-all">
-            + Novo Membro
-          </Button>
+          <button
+            onClick={handleOpenAddModal}
+            className="group relative h-12 px-8 bg-gradient-to-r from-red-600 to-red-900 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-red-200/50 hover:shadow-red-600/40 transition-all duration-300 overflow-hidden hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              <svg className="w-4 h-4 text-amber-400 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" strokeWidth={3} /></svg>
+              Novo Membro
+            </span>
+          </button>
         </div>
       </header>
 
@@ -218,7 +243,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
           <div className="flex justify-between items-start">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total de Membros</span>
-            <div className="p-2 bg-slate-50 rounded-lg text-slate-400"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth={2} /></svg></div>
+            <div className="p-2 bg-slate-100 rounded-lg text-slate-400"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeWidth={2} /></svg></div>
           </div>
           <span className="text-4xl font-heading font-black text-slate-800 tracking-tighter">{totalMembers}</span>
         </div>
@@ -274,12 +299,12 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
 
           <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
             {unreadPrayers.length === 0 ? (
-              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div className="text-center py-8 bg-slate-100 rounded-xl border border-dashed border-slate-200">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nenhum pedido pendente</p>
               </div>
             ) : (
               unreadPrayers.map((prayer) => (
-                <div key={prayer.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-violet-50 hover:border-violet-100 transition-colors group relative">
+                <div key={prayer.id} className="p-4 bg-slate-100 rounded-2xl border border-slate-200 hover:bg-violet-50 hover:border-violet-100 transition-colors group relative">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest bg-violet-100/50 px-2 py-1 rounded-md">{prayer.userName}</span>
                     <span className="text-[9px] font-bold text-slate-400">{prayer.timestamp ? new Date(prayer.timestamp).toLocaleDateString('pt-BR') : 'Hoje'}</span>
@@ -311,12 +336,12 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
 
           <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
             {residenceServices.filter(rs => !rs.isRead || rs.status === 'Pendente').length === 0 ? (
-              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div className="text-center py-8 bg-slate-100 rounded-xl border border-dashed border-slate-200">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nenhuma solicitação</p>
               </div>
             ) : (
               residenceServices.filter(rs => !rs.isRead || rs.status === 'Pendente').map((rs) => (
-                <div key={rs.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-rose-50 hover:border-rose-100 transition-colors relative group">
+                <div key={rs.id} className="p-4 bg-slate-100 rounded-2xl border border-slate-200 hover:bg-rose-50 hover:border-rose-100 transition-colors relative group">
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">{rs.memberName}</span>
                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md uppercase ${rs.status === 'Pendente' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>{rs.status}</span>
@@ -354,7 +379,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
 
             {/* Table Header/Controls */}
-            <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/30">
+            <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-100/30">
               <div className="relative w-full md:w-72">
                 <Input type="text" placeholder="Buscar membro..." className="pl-10 h-10 text-xs bg-white border-slate-200" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 <svg className="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeWidth={2} /></svg>
@@ -392,7 +417,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
+                <thead className="bg-slate-100/50 text-[10px] uppercase font-black text-slate-400">
                   <tr>
                     <th className="px-6 py-4 pl-8">Membro</th>
                     <th className="px-6 py-4">Congregação</th>
@@ -400,7 +425,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                     <th className="px-6 py-4 text-right pr-8">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-slate-100">
                   {members
                     .filter(m => {
                       const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -411,7 +436,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                       return matchesSearch && matchesBaptism;
                     })
                     .map(member => (
-                      <tr key={member.id} className="hover:bg-slate-50/30 transition-colors group">
+                      <tr key={member.id} className="hover:bg-slate-100/30 transition-colors group">
                         <td className="px-6 py-4 pl-8">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:bg-red-600 group-hover:text-white transition-colors">
@@ -447,7 +472,7 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                 </tbody>
               </table>
             </div>
-            <div className="p-4 border-t border-slate-50 bg-slate-50/30 text-center text-xs text-slate-400 font-medium">
+            <div className="p-4 border-t border-slate-100 bg-slate-100/30 text-center text-xs text-slate-400 font-medium">
               Exibindo {members.filter(m => {
                 const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
                 const matchesBaptism =
@@ -578,17 +603,17 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                       placeholder="Nome Completo"
                       value={formData.name}
                       onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300"
+                      className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Data de Nascimento</label>
-                    <Input type="date" value={formData.birthDate} onChange={e => setFormData({ ...formData, birthDate: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" />
+                    <Input type="date" value={formData.birthDate} onChange={e => setFormData({ ...formData, birthDate: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Naturalidade / País</label>
                     <select
-                      className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all"
+                      className="w-full h-16 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all"
                       value={formData.country || 'Brasil'}
                       onChange={e => setFormData({ ...formData, country: e.target.value })}
                     >
@@ -604,11 +629,11 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">E-mail</label>
-                    <Input type="email" placeholder="email@exemplo.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300" />
+                    <Input type="email" placeholder="email@exemplo.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">WhatsApp</label>
-                    <Input type="text" required placeholder="(00) 90000-0000" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300" />
+                    <Input type="text" required placeholder="(00) 90000-0000" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400" />
                   </div>
                 </div>
               </div>
@@ -625,19 +650,19 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">CEP</label>
-                    <Input type="text" placeholder="00000-000" value={formData.cep} onChange={e => setFormData({ ...formData, cep: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300" />
+                    <Input type="text" placeholder="00000-000" value={formData.cep} onChange={e => setFormData({ ...formData, cep: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400" />
                   </div>
                   <div className="md:col-span-3 space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Logradouro (Rua/Av)</label>
-                    <Input type="text" placeholder="Rua das Flores" value={formData.rua} onChange={e => setFormData({ ...formData, rua: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300" />
+                    <Input type="text" placeholder="Rua das Flores" value={formData.rua} onChange={e => setFormData({ ...formData, rua: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400" />
                   </div>
                   <div className="md:col-span-1 space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Número</label>
-                    <Input type="text" placeholder="123" value={formData.numero} onChange={e => setFormData({ ...formData, numero: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300" />
+                    <Input type="text" placeholder="123" value={formData.numero} onChange={e => setFormData({ ...formData, numero: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400" />
                   </div>
                   <div className="md:col-span-3 space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Bairro</label>
-                    <Input type="text" placeholder="Centro" value={formData.bairro} onChange={e => setFormData({ ...formData, bairro: e.target.value })} className="h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-300" />
+                    <Input type="text" placeholder="Centro" value={formData.bairro} onChange={e => setFormData({ ...formData, bairro: e.target.value })} className="h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all placeholder:text-slate-400" />
                   </div>
                 </div>
               </div>
@@ -661,24 +686,24 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
                         <span className="text-[8px] font-black text-amber-600 uppercase bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">Aguardando Batismo</span>
                       )}
                     </div>
-                    <Input type="date" value={formData.baptismDate} onChange={e => setFormData({ ...formData, baptismDate: e.target.value })} className={`h-16 px-6 bg-slate-50 border-slate-100 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all ${!formData.baptismDate && 'border-amber-100'}`} />
+                    <Input type="date" value={formData.baptismDate} onChange={e => setFormData({ ...formData, baptismDate: e.target.value })} className={`h-16 px-6 bg-slate-100 border-slate-200 rounded-2xl font-black text-slate-800 text-sm focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all ${!formData.baptismDate && 'border-amber-100'}`} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Congregação de Vínculo</label>
-                    <select className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={formData.congregacao} onChange={e => setFormData({ ...formData, congregacao: e.target.value })}>
+                    <select className="w-full h-16 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={formData.congregacao} onChange={e => setFormData({ ...formData, congregacao: e.target.value })}>
                       <option value="Sede">Sede Central</option>
                       {missionFields.map(f => <option key={f.id} value={f.name}>{f.name}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Função Eclesiástica</label>
-                    <select className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
+                    <select className="w-full h-16 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
                       {cargoOptions.map(cargo => <option key={cargo} value={cargo}>{cargo}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">Situação Cadastral</label>
-                    <select className="w-full h-16 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as any })}>
+                    <select className="w-full h-16 px-6 bg-slate-100 border border-slate-200 rounded-2xl font-black text-slate-800 text-sm appearance-none cursor-pointer focus:ring-8 focus:ring-red-600/5 focus:border-red-600/20 outline-none transition-all" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as any })}>
                       {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
@@ -688,12 +713,29 @@ const Secretaria: React.FC<SecretariaProps> = ({ members, onSaveMember, onUpdate
               <div className="pt-4">
                 <button
                   type="submit"
-                  className={`group relative w-full h-20 rounded-[2.5rem] font-black text-sm text-white shadow-2xl transition-all active:scale-[0.98] uppercase tracking-[0.2em] overflow-hidden ${isEditMode ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 shadow-indigo-200' : 'bg-gradient-to-r from-red-600 via-red-700 to-red-800 shadow-red-200'}`}
+                  disabled={isSaving}
+                  className={`group relative w-full h-20 rounded-[2rem] font-black text-sm text-white shadow-2xl transition-all active:scale-[0.98] uppercase tracking-[0.2em] overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed ${isEditMode ? 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 shadow-indigo-100' : 'bg-gradient-to-r from-red-600 via-red-700 to-red-800 shadow-red-100'}`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:animate-shimmer pointer-events-none"></div>
+                  <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+
                   <span className="relative z-10 flex items-center justify-center gap-3">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 13l4 4L19 7" strokeWidth={3.5} /></svg>
-                    {isEditMode ? 'Salvar Alterações' : 'Confirmar Nova Matrícula'}
+                    {isSaving ? (
+                      <>
+                        <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Gravando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path d="M5 13l4 4L19 7" strokeWidth={3.5} />
+                        </svg>
+                        {isEditMode ? 'Salvar Alterações' : 'Confirmar Nova Matrícula'}
+                      </>
+                    )}
                   </span>
                 </button>
               </div>

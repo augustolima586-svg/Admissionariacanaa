@@ -6,6 +6,7 @@ import { Input } from './Input';
 import { AttendanceRecord, Member, MemberStatus } from '../types';
 import { VisitorRegistrationModal } from './VisitorRegistrationModal';
 import { validateName, formatName } from '../utils/validation';
+import { ConsolidationModal } from './ConsolidationModal';
 // @ts-nocheck
 
 interface RecepcaoProps {
@@ -13,17 +14,21 @@ interface RecepcaoProps {
     attendanceRecords: AttendanceRecord[];
     setAttendanceRecords: (record: Omit<AttendanceRecord, 'id'>) => Promise<void>;
     onSaveMember: (member: Omit<Member, 'id' | 'contributions'>) => Promise<any>;
+    onUpdateMember: (id: string, m: Partial<Member>) => Promise<any>;
 }
 
 const Recepcao: React.FC<RecepcaoProps> = ({
     members,
     attendanceRecords,
     setAttendanceRecords,
-    onSaveMember
+    onSaveMember,
+    onUpdateMember
 }) => {
     const [activeTab, setActiveTab] = useState<'visualizar' | 'visitantes' | 'decisoes'>('visitantes');
     const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
     const [nameError, setNameError] = useState<string>('');
+    const [isConsolidationModalOpen, setIsConsolidationModalOpen] = useState(false);
+    const [selectedMemberForConsolidation, setSelectedMemberForConsolidation] = useState<{ id: string, name: string } | null>(null);
 
     // Estados para o formulário de Novos Convertidos (Decisões)
     const [convertForm, setConvertForm] = useState({
@@ -47,6 +52,26 @@ const Recepcao: React.FC<RecepcaoProps> = ({
     const newConverts = useMemo(() => {
         return members.filter(m => m.status === 'Novo Convertido');
     }, [members]);
+
+    const consolidatedConverts = useMemo(() => {
+        return members.filter(m => m.status === 'Consolidado');
+    }, [members]);
+
+    const handleMarkAsConsolidated = (member: Member) => {
+        setSelectedMemberForConsolidation({ id: member.id, name: member.name });
+        setIsConsolidationModalOpen(true);
+    };
+
+    const handleSaveConsolidation = async (consolidatorName: string) => {
+        if (!selectedMemberForConsolidation) return;
+
+        await onUpdateMember(selectedMemberForConsolidation.id, {
+            status: 'Consolidado',
+            consolidatorName: consolidatorName
+        });
+        // Error handling is managed by onUpdateMember/App.tsx mostly, but we could add alert here if needed
+        // Assuming optimistic update makes it feel instant.
+    };
 
     const handleSaveVisitorAttendance = async (data: { date: string; description: string; visitors: string[] }) => {
         await setAttendanceRecords(data);
@@ -73,6 +98,7 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                 congregacao: 'Sede',
                 ageGroup: 'Adulto', // Default, pode ser ajustado depois
                 joinDate: convertForm.date,
+                decisionCulto: convertForm.culto,
                 // @ts-ignore - Armazenando info extra temporariamente ou apenas seguindo o fluxo de criação
             });
             alert('Decisão registrada com sucesso! Glória a Deus!');
@@ -130,13 +156,16 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                 <div className="w-2 h-6 bg-amber-600 rounded-full mr-4"></div>
                                 Últimas Visitas
                             </h3>
-                            <Button
+                            <button
                                 onClick={() => setIsVisitorModalOpen(true)}
-                                className="h-10 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-amber-100"
+                                className="group relative h-12 px-6 bg-gradient-to-r from-red-600 to-red-900 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.15em] shadow-lg shadow-red-200 hover:shadow-red-600/40 transition-all duration-300 overflow-hidden hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                Registrar Visitas
-                            </Button>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                                <span className="relative z-10 flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-amber-400 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                                    Registrar Visitas
+                                </span>
+                            </button>
                         </div>
 
                         <div className="space-y-4">
@@ -201,7 +230,7 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                     placeholder="Ex: João Silva"
                                     value={convertForm.name}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConvertForm({ ...convertForm, name: e.target.value })}
-                                    className="bg-slate-50 border-slate-200"
+                                    className="bg-slate-100 border-slate-200"
                                 />
                                 {nameError && <p className="text-red-600 text-xs mt-1">{nameError}</p>}
                             </div>
@@ -212,7 +241,7 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                     placeholder="(00) 00000-0000"
                                     value={convertForm.phone}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConvertForm({ ...convertForm, phone: e.target.value })}
-                                    className="bg-slate-50 border-slate-200"
+                                    className="bg-slate-100 border-slate-200"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -223,13 +252,13 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                         required
                                         value={convertForm.date}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConvertForm({ ...convertForm, date: e.target.value })}
-                                        className="bg-slate-50 border-slate-200"
+                                        className="bg-slate-100 border-slate-200"
                                     />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Culto</label>
                                     <select
-                                        className="w-full px-4 h-11 bg-slate-50 border border-slate-200 rounded-xl font-black text-slate-800 text-xs uppercase tracking-widest outline-none focus:border-amber-500 transition-all"
+                                        className="w-full px-4 h-11 bg-slate-100 border border-slate-200 rounded-xl font-black text-slate-800 text-xs uppercase tracking-widest outline-none focus:border-amber-500 transition-all"
                                         value={convertForm.culto}
                                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setConvertForm({ ...convertForm, culto: e.target.value })}
                                     >
@@ -241,13 +270,26 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                     </select>
                                 </div>
                             </div>
-                            <Button
+                            <button
                                 type="submit"
                                 disabled={isSavingConvert}
-                                className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
+                                className="group relative w-full h-14 bg-gradient-to-r from-red-600 to-red-900 text-white rounded-xl font-black text-xs uppercase tracking-[0.15em] shadow-xl shadow-red-200/50 hover:shadow-red-600/40 transition-all duration-300 overflow-hidden hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                {isSavingConvert ? 'Salvando...' : 'Registrar Decisão'}
-                            </Button>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                    {isSavingConvert ? (
+                                        <span className="flex items-center gap-2">
+                                            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            Salvando...
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <svg className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                            Registrar Decisão
+                                        </>
+                                    )}
+                                </span>
+                            </button>
                         </form>
                     </Card>
 
@@ -256,19 +298,19 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                             <div className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
                                 <div>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total de Decisões</p>
-                                    <p className="text-3xl font-black text-slate-900 mt-1">{newConverts.length}</p>
+                                    <p className="text-3xl font-black text-slate-900 mt-1">{newConverts.length + consolidatedConverts.length}</p>
                                 </div>
                                 <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                                 </div>
                             </div>
                             {/* Placeholder para métrica futura */}
-                            <div className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between opacity-60">
+                            <div className="p-6 bg-white rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
                                 <div>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consolidados</p>
-                                    <p className="text-3xl font-black text-slate-900 mt-1">-</p>
+                                    <p className="text-3xl font-black text-emerald-600 mt-1">{consolidatedConverts.length}</p>
                                 </div>
-                                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400">
+                                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </div>
                             </div>
@@ -284,8 +326,9 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                     <thead>
                                         <tr className="text-[10px] uppercase font-black text-slate-400 tracking-widest border-b border-slate-100 bg-slate-50/50">
                                             <th className="px-6 py-4 rounded-tl-xl">Nome</th>
-                                            <th className="px-6 py-4">Data da Decisão</th>
-                                            <th className="px-6 py-4 rounded-tr-xl">Status</th>
+                                            <th className="px-6 py-4">Data/Culto</th>
+                                            <th className="px-6 py-4">Status / Consolidador</th>
+                                            <th className="px-6 py-4 rounded-tr-xl text-right">Ação</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
@@ -296,19 +339,42 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                                                 </td>
                                             </tr>
                                         )}
-                                        {newConverts.map((member) => (
+                                        {[...newConverts, ...consolidatedConverts].sort((a, b) => {
+                                            const dateA = a.joinDate ? new Date(a.joinDate).getTime() : 0;
+                                            const dateB = b.joinDate ? new Date(b.joinDate).getTime() : 0;
+                                            return dateB - dateA;
+                                        }).map((member) => (
                                             <tr key={member.id} className="group hover:bg-slate-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <p className="text-sm font-bold text-slate-700">{formatName(member.name)}</p>
                                                     <p className="text-[10px] text-slate-400">{member.phone}</p>
                                                 </td>
-                                                <td className="px-6 py-4 text-xs font-medium text-slate-600">
-                                                    {new Date(member.joinDate).toLocaleDateString('pt-BR')}
+                                                <td className="px-6 py-4">
+                                                    <p className="text-xs font-medium text-slate-600">{new Date(member.joinDate).toLocaleDateString('pt-BR')}</p>
+                                                    <p className="text-[9px] text-slate-400 font-bold uppercase">{member.decisionCulto}</p>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100">
-                                                        {member.status}
-                                                    </span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className={`px-3 py-1 w-fit rounded-full text-[9px] font-black uppercase tracking-widest border ${member.status === 'Consolidado'
+                                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                            : 'bg-amber-50 text-amber-600 border-amber-100'
+                                                            }`}>
+                                                            {member.status}
+                                                        </span>
+                                                        {member.consolidatorName && (
+                                                            <p className="text-[9px] text-slate-500 font-bold uppercase">Resp: {member.consolidatorName}</p>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    {member.status === 'Novo Convertido' && (
+                                                        <button
+                                                            onClick={() => handleMarkAsConsolidated(member)}
+                                                            className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-colors active:scale-95"
+                                                        >
+                                                            Acompanhar
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -324,6 +390,13 @@ const Recepcao: React.FC<RecepcaoProps> = ({
                 isOpen={isVisitorModalOpen}
                 onClose={() => setIsVisitorModalOpen(false)}
                 onSave={handleSaveVisitorAttendance}
+            />
+
+            <ConsolidationModal
+                isOpen={isConsolidationModalOpen}
+                onClose={() => setIsConsolidationModalOpen(false)}
+                onSave={handleSaveConsolidation}
+                memberName={selectedMemberForConsolidation?.name || ''}
             />
         </div>
     );
